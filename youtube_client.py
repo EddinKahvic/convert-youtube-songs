@@ -84,7 +84,7 @@ class YoutubeClient(object):
         ydl_opts = {'quiet': True}
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(youtube_url, download=False)
-            print(info['categories'])
+            
             # filter, only 'Music' is allowed
             if 'Music' in info['categories']:
                 

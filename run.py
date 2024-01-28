@@ -1,8 +1,9 @@
 from youtube_client import YoutubeClient
+from spotify_client import SpotifyClient
 
 def run():
     # Get the playlist list from YouTube
-    youtube_client = YoutubeClient('./credentials/client_secret.json')   
+    youtube_client = YoutubeClient('./credentials/client_secret.json')
     playlists = youtube_client.get_playlists()
     
     # Choose what playlist to extract music from
@@ -12,11 +13,20 @@ def run():
     chosen_playlist = playlists[choice]
     print(f"You selected: {chosen_playlist.title}")
     
-    # For each video in playlist, get track and artist
+    # For each video in playlist, get track
     songs = youtube_client.get_videos(chosen_playlist.id)
     print(f"Attempting to add {len(songs)} songs...")
-    for song in songs:
-        print(song.track)
+    
+    # run spotify_client, getting auth-token
+    # fetch spotify_id
+    # fetch owned spotify playlists
+    # choose the desired playlist
+    # search for all the songs on spotify, returning the uris.
+    # check if the song already exists in the playlist (optional)
+    # add songs to specified playlist in increments of 100 (single request limit)
+    
+        
+        
 
     
         
