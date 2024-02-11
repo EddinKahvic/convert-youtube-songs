@@ -6,6 +6,11 @@ from dotenv import load_dotenv
 import urllib.parse
 from datetime import datetime
 
+class Playlist(object):
+    def __init__(self, id, title):
+        self.id = id
+        self.title = title
+        
 load_dotenv('./credentials/.env')
 
 app = Flask(__name__)
@@ -19,13 +24,12 @@ authorize_url = 'https://accounts.spotify.com/authorize'
 token_url = 'https://accounts.spotify.com/api/token'
 api_base_url = 'https://api.spotify.com/v1'
 
+current_time = time()
+chosen_playlist_id = ''
+
 
 @app.route('/')
 def index():
-    return "<a href='/login'>Authorize</a>"
-
-@app.route('/login')
-def login():
     scope = 'user-read-private playlist-read-private playlist-modify-private'
     
     params = {
@@ -60,31 +64,69 @@ def callback():
         session['access_token'] = token_info['access_token']
         session['refresh_token'] = token_info['refresh_token']
         session['expires_at'] = datetime.now().timestamp() + token_info['expires_in']
-        return redirect('/playlists')
+        
+        if (session['user_id']):
+            return redirect('/playlists')
+        
+        return redirect('/user')
+
+@app.route('/user')
+def user():
+    if 'access_token' not in session:
+        return redirect('/')
     
+    if current_time > session['expires_at']:
+        return redirect('/refresh-token')
+    
+    headers = {
+        'Authorization': f"Bearer {session['access_token']}"
+    }
+    
+    user_info = requests.get('https://api.spotify.com/v1/me', headers=headers).json()
+    session['user_id'] = user_info['id']
+    return redirect('/playlists')
+
 @app.route('/playlists')
 def playlists():
     if 'access_token' not in session:
-        return redirect('/login')
+        return redirect('/')
     
-    t = time()
-    if t > session['expires_at']:
+    if current_time > session['expires_at']:
         return redirect('/refresh-token')
         
     headers = {
         'Authorization': f"Bearer {session['access_token']}"
     }
     
-    response = requests.get(url=api_base_url + '/me/playlists', headers=headers)
-    playlists = response.json()
-    return jsonify(playlists)
+    response = requests.get('https://api.spotify.com/v1/me/playlists', headers=headers).json()
+    
+    my_playlists = []
+    
+    for item in response['items']:
+        owner_id = item['owner']['id']
+        if session['user_id'] == owner_id:
+            my_playlists.append(Playlist(item['id'], item['name']))
+    
+    
+    for index, playlist in enumerate(my_playlists):
+        print(f"{index}: {playlist.title}")
+    choice = int(input("Enter the Spotify playlist: "))
+    chosen_playlist = my_playlists[choice]
+    print(f"You selected: {chosen_playlist.title}")
+    chosen_playlist_id = chosen_playlist.id
+    
+    return redirect('/search')
+            
+@app.route('/search')
+def search():
+    pass
 
 @app.route('/refresh-token')
 def refresh_token():
     if 'refresh_token' not in session:
-        return redirect('/login')
+        return redirect('/')
     
-    if datetime.now().timestamp > session['expires_at']:
+    if current_time > session['expires_at']:
         request_body = {
             'grant_type': 'refresh_token',
             'refresh_token': session['refresh_token'],

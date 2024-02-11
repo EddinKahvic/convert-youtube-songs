@@ -6,10 +6,6 @@ import yt_dlp
 import re
 
 
-class Song(object):
-    def __init__(self, track):
-        self.track = track
-
 class Playlist(object):
     def __init__(self, id, title):
         self.id = id
@@ -73,7 +69,7 @@ class YoutubeClient(object):
             video_id = item['snippet']['resourceId']['videoId']
             track = self.get_track(video_id)
             if track:
-                songs.append(Song(track))
+                songs.append(track)
                 
         return songs
 
@@ -90,5 +86,5 @@ class YoutubeClient(object):
                 
                 # Extract true title - get rid of: [], (), whitespace
                 title = info['title']
-                true_title = "".join(re.split("\(|\)|\[|\]|\'|\'", title)[::2]).strip()
+                true_title = "".join(re.split("\(|\)|\[|\]", title)[::2]).strip()
                 return true_title
