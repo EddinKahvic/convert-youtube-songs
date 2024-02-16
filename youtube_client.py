@@ -1,5 +1,5 @@
 import os
-
+import sys
 import google_auth_oauthlib.flow
 import googleapiclient.discovery
 import yt_dlp
@@ -26,9 +26,9 @@ class YoutubeClient(object):
         # Get credentials and create an API client
         flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
             client_secrets_file_location, scopes)
-        credentials = flow.run_local_server()
+        credentials = flow.run_local_server(port=5000)
         youtube_client = googleapiclient.discovery.build(
-            api_service_name, api_version, credentials=credentials)
+            api_service_name, api_version, credentials=credentials, num_retries=0)
         
         self.youtube_client = youtube_client
 
@@ -88,3 +88,28 @@ class YoutubeClient(object):
                 title = info['title']
                 true_title = "".join(re.split("\(|\)|\[|\]", title)[::2]).strip()
                 return true_title
+            
+            
+    def run(self):
+        
+        # Get the playlist list from YouTube
+        playlists = self.get_playlists()
+        
+        # Choose what playlist to extract music from
+        for index, playlist in enumerate(playlists):
+            print(f"{index}: {playlist.title}")
+        choice = int(input("Enter the YouTube playlist: "))
+        chosen_playlist = playlists[choice]
+        print(f"You selected: {chosen_playlist.title}")
+        
+        # For each video in playlist, get track
+        songs = self.get_videos(chosen_playlist.id)
+        print(f"Attempting to add {len(songs)} songs...")
+        
+        # Add song titles to "songs.txt"
+        textfile = open('songs.txt', 'w', encoding="utf-8")
+        for song in songs:
+            textfile.write(f'{song}\n')
+        textfile.close()
+        
+        
