@@ -44,16 +44,6 @@ class YoutubeClient(object):
         playlists = [Playlist(item['id'], item['snippet']['title']) for item in response['items']]
         return playlists 
 
-    # Finish this after basic functionality is done.
-    def get_liked_videos(self):
-        request = self.youtube_client.videos().list(
-            part="id, snippet",
-            myRating="like"
-        )
-        response = request.execute()
-        liked_videos = [liked_video for liked_video in response['items']]
-        return liked_videos
-
 
     def get_videos(self, playlist_id):
         request = self.youtube_client.playlistItems().list(
