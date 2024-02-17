@@ -7,7 +7,6 @@ import urllib.parse
 from datetime import datetime
 import json
 from youtube_client import YoutubeClient
-import webbrowser
 
 class Playlist(object):
     def __init__(self, id, title):
