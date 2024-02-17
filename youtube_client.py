@@ -1,5 +1,4 @@
 import os
-import sys
 import google_auth_oauthlib.flow
 import googleapiclient.discovery
 import yt_dlp
